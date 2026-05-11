@@ -1,0 +1,17 @@
+datasets:
+  adapter_type: FGDB
+  columns:
+  - null
+  datasource:
+    layer: null
+  geom:
+    crs: 4326
+    geom_column: GEOMETRY
+    geom_type: point
+  id: 0
+  name: null
+  operators:
+  - overlay
+  - proximity:
+      distance: 100
+  unique_id: OBJECTID
