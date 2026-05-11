@@ -1,6 +1,8 @@
 '''
 Test of writing a yaml 
-must install pyyaml to use
+must install pyyaml to use.
+Results are in results.yml
+
 
 https://stackoverflow.com/questions/12470665/how-can-i-write-data-in-yaml-format-in-a-file
 d = {'A':'a', 'B':{'C':'c', 'D':'d', 'E':'e'}}
