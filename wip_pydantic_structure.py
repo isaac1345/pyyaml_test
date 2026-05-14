@@ -87,7 +87,7 @@ sample_dict = {
         "geom_type": "point",
         "crs": 4326
     },
-    "operators": {"overlay": {"distance": None},
+    "operators": {"overlay": {},
                   "buffer": {"distance": 50}
     }
 }
