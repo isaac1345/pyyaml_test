@@ -3,56 +3,74 @@
 
 from typing import Annotated, Literal, Optional
 
-from annotated_types import Gt
+from annotated_types import Gt, Ge
 
-from pydantic import BaseModel, SecretStr, StringConstraints, ValidationError
+from pydantic import BaseModel, SecretStr, ValidationError
 print("imports complete")
 
-class SomeGeometry(BaseModel):
+class Geometry(BaseModel):
     # string input
     geom_column: str
     # multipart needed? curve?
-    # input is point, line, polygon
+    # input must be point, line, polygon
     # TO-DO make case insensitive?
     geom_type: Literal["point", "line", "polygon"]
-    # integer input greater than 0
+    # input must be integer greater than 0
     crs: Annotated[int, Gt(0)]
 
-class SomeOperators(BaseModel):
-    # input is adjacent, buffer, overlay, proximity
-    # TO-DO make case insensitive?
-    operators: Literal["adjacent", "buffer", "overlay", "proximity"]
+class AdjacencyOperator(BaseModel):
+    # TO-DO distance value needed?
+    pass
 
-class OperatorDistance(BaseModel):
-    # optional, float input greater than 0
-    distance: Optional[Annotated[float, Gt(0)]] = None
+class BufferOperator(BaseModel):
+    distance: Annotated[float, Gt(0)]
 
-class SomeName(BaseModel):
+class OverlayOperator(BaseModel):
+    # no distance needed cause intersect
+    pass
+
+class ProximityOperator(BaseModel):
+    distance: Annotated[float, Gt(0)]
+
+class Operators(BaseModel):
+    adjacent: Optional[AdjacencyOperator] = None
+    buffer: Optional[BufferOperator] = None
+    overlay: OverlayOperator
+    proximity: Optional[ProximityOperator] = None
+
+# class SomeOperators(BaseModel):
+#     operators: dict[Literal["adjacent", "buffer", "overlay", "proximity"], Optional[Annotated[float, Gt(0)]]]
+
+#class OperatorDistance(BaseModel):
+#    distance: Optional[Annotated[float, Gt(0)]] = None
+
+class Registry(BaseModel):
     # should this be uuid?
-    # integer input
-    id: int
+    #input must be integer greater than or equal to 0
+    id: Annotated[int, Ge(0)]
     # string input
     name: str
-    # integer input
+    # string input
     unique_id: str
-    # input is fgdb, kml, oracle, shp
-    # TO-DO make case insensitive?
+    # input must be fgdb, kml, oracle, shp
+    # TO-DO make case insensitive and validate against allowed list of adapter types
     adapter_type: Literal["fgdb", "kml", "oracle", "shp"]
-    # SecretStr for UNC paths?
+    # str layer or table, SecretStr for UNC paths?
+    # does it need to be dict?
     # dict input
     datasource: dict[str, SecretStr]
-    # optional, list of string input
+    # optional, list of strings
     columns: Optional[list[str]] = None
-    # optional, string input
+    # optional, string
     definition: Optional[str] = None
-    # class / object input
-    geom: SomeGeometry
+    geom: Geometry
+    operators: Operators
 
 sample_dict = {
     "id": 0,
     "name": "Featureclass_Name",
     "unique_id": "OBJECTID",
-    "adapter_type": "FGDB",
+    "adapter_type": "fgdb",
     "datasource": {
         "layer": "Datasource"
     },
@@ -68,12 +86,15 @@ sample_dict = {
         "geom_column": "GEOMETRY",
         "geom_type": "point",
         "crs": 4326
+    },
+    "operators": {"overlay": {"distance": None},
+                  "buffer": {"distance": 50}
     }
 }
 #print(sample_dict)
 try:
     # load via kwargs
-    test = SomeName(**sample_dict)
+    test = Registry(**sample_dict)
     print(test)
 except ValidationError as e:
     print(e.errors())
